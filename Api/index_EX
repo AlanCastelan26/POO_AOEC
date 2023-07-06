@@ -1,0 +1,76 @@
+<?php
+
+include 'conexion.php';
+
+$pdo=new conexion();
+
+if($_SERVER['REQUEST_METHOD']=='GET')
+{
+	if(isset($_GET['Id']))
+	{
+		$sql=$pdo->prepare("SELECT * FROM actualizacion_inventario WHERE numero_de_factura=:NDF");
+		$sql->bindValue(':NDF',$_GET['numero_de_factura']);
+		$sql->execute();
+		$sql->setFetchMode(PDO::FETCH_ASSOC);
+		header ("http/1.1 200 OK");
+		echo json_encode($sql->fetchAll());
+		exit;
+	}
+	else
+	{
+		$sql=$pdo->prepare("SELECT * FROM actualizacion_inventario");
+		$sql->execute();
+		$sql->setFetchMode(PDO::FETCH_ASSOC);
+		header ("http/1.1 200 OK");
+		echo json_encode($sql->fetchAll());
+		exit;
+	}
+}
+
+if($_SERVER['REQUEST_METHOD']=='POST')
+{
+	$sql="INSERT INTO actualizacion_inventario (fecha_de_compra, numero_de_factura, id, cantidad) VALUES (:FDC, :NDF, :Id, :Cantidad)";
+	$stmt=$pdo->prepare($sql);	
+	$stmt->bindValue(':Id',$_GET['Id']);
+	$stmt->bindValue(':FDC',$_GET['Fecha_de_compra']);
+	$stmt->bindValue(':NDF',$_GET['Numero_de_factura']);
+	$stmt->bindValue(':Id',$_GET['Id_producto']);
+	$stmt->bindValue(':Cantidad',$_GET['Cantidad']);
+	$stmt->execute();
+	$idPost=$pdo->lastInsertId();
+	
+	if($idPost)
+	{
+		header ("http/1.1 200 OK");
+		echo json_encode($idPost);
+		exit;
+	}
+}
+
+if($_SERVER['REQUEST_METHOD']=='DELETE')
+{
+	$sql="DELETE FROM actualizacion_inventario WHERE id=:Id";
+	$stmt=$pdo->prepare($sql);
+	$stmt->bindValue(':Id',$_GET['Id']);
+	$stmt->execute();
+	header("HTTP/1.1 200 OK");
+	exit;
+}
+
+if($_SERVER['REQUEST_METHOD']=='PUT')
+{
+	$sql="UPDATE actualizacion_inventario SET fecha_de_compra=:FDC, id=:Id, cantidad=:Cantidad WHERE numero_de_factura=:NDF";
+	$stmt=$pdo->prepare($sql);
+	$stmt->bindValue(':Id',$_GET['Id']);
+	$stmt->bindValue(':FDC',$_GET['Fecha_de_compra']);
+	$stmt->bindValue(':NDF',$_GET['Numero_de_factura']);
+	$stmt->bindValue(':Id',$_GET['Id_producto']);
+	$stmt->bindValue(':Cantidad',$_GET['Cantidad']);
+	$stmt->execute();
+	header("HTTP/1.1 200 OK");
+	exit;
+}
+
+header ("HTTP/1.1 400 Bad REQUEST_METHOD")
+
+?>
